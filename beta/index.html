@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Budapesti bulik, koncertek és kocsmák egy helyen. Így teheted fel a Where? bétát iPhone-ra és Androidra.">
+<meta property="og:title" content="Where? béta">
+<meta property="og:description" content="Budapesti bulik, koncertek és kocsmák egy helyen.">
+<meta name="theme-color" content="#0B0B0F">
+<title>Where? béta</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&display=swap">
+<style>
+/* Egyoszlopos, telefonra szabott oldal az app saját (Midnight) arculatában: sötét alap, egy lime akcent */
+:root{
+  --bg:#0B0B0F; --surface:#16161D; --line:#26262F; --fg:#F4F4F6; --muted:#9A9AA8; --accent:#C6FF3D; --on-accent:#0B0B0F;
+  --display:"Space Grotesk",system-ui,sans-serif; --body:Inter,system-ui,-apple-system,sans-serif; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:dark;
+}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 var(--body);}
+.wrap{max-width:560px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:32px}
+header{display:flex;align-items:center;gap:16px}
+header svg{width:64px;height:64px;flex:none}
+h1{font:700 2.2rem/1.1 var(--display);margin:0;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:4px 0 0}
+h2{font:600 1.15rem/1.3 var(--display);margin:0 0 12px}
+h3{font:600 1rem/1.3 var(--display);margin:0 0 4px}
+p{margin:0}
+ol{margin:0;padding:0;list-style:none;display:grid;gap:14px;counter-reset:s}
+ol li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start}
+ol li::before{content:counter(s);font:700 .9rem/28px var(--display);text-align:center;border-radius:50%;background:var(--surface);border:1px solid var(--line);color:var(--accent)}
+a{color:var(--accent)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px}
+.tab{font:600 1rem/1 var(--body);padding:12px;border-radius:10px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--on-accent)}
+.tab:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.panel{display:grid;gap:24px}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+summary{cursor:pointer}
+.box{display:grid;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:20px}
+.qr{justify-self:center;width:220px;max-width:100%;border-radius:12px;background:#fff;padding:8px}
+.btn{display:block;text-align:center;background:var(--accent);color:var(--on-accent);font:600 1rem/1 var(--body);padding:16px;border-radius:14px;text-decoration:none;border:0;cursor:pointer;width:100%}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn[aria-disabled="true"]{background:var(--line);color:var(--muted);pointer-events:none}
+code{display:block;font:13px/1.5 var(--mono);color:var(--muted);word-break:break-all;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.note{color:var(--muted);font-size:.92rem}
+.uses{display:grid;gap:16px}
+.use{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:baseline}
+.use b{font:600 .8rem/1.4 var(--display);text-transform:uppercase;letter-spacing:.06em;color:var(--accent)}
+ul{margin:0;padding-left:20px;display:grid;gap:8px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <svg viewBox="-10.2 -10.2 340.4 340.4" aria-hidden="true"><g transform="rotate(-5 160 160)"><path d="M160 6 C276 6 314 44 314 160 C314 276 276 314 160 314 C44 314 6 276 6 160 C6 44 44 6 160 6Z" fill="#C6FF3D"/><g transform="translate(95 48) scale(1.3)"><path d="M22 48 A28 28 0 1 1 63 72 C55 77 50 83 50 95 L50 99" fill="none" stroke="#0B0B0F" stroke-width="25" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 168 C43 160 32 150 32 137 A18 18 0 0 1 68 137 C68 150 57 160 50 168Z" fill="#0B0B0F" stroke="#0B0B0F" stroke-width="4" stroke-linejoin="round"/><circle cx="50" cy="137" r="6.5" fill="#C6FF3D"/></g></g></svg>
+    <div>
+      <h1>Where? béta</h1>
+      <p class="sub">Budapesti bulik, koncertek és kocsmák egy helyen. Köszi, hogy kipróbálod!</p>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Telefon típusa">
+    <button class="tab" role="tab" id="tab-iphone" aria-controls="iphone" aria-selected="true">iPhone</button>
+    <button class="tab" role="tab" id="tab-android" aria-controls="android" aria-selected="false">Android</button>
+  </div>
+
+  <div class="box" id="inapp" hidden>
+    <h3>Nyisd meg böngészőben</h3>
+    <p class="note" id="inapp-text">A Messengerből és az Instagramról nem lehet appot letölteni vagy telepíteni. Nyomd meg a gombot, és az oldal megnyílik a rendes böngésződben.</p>
+    <a class="btn" id="inapp-btn" href="#">Megnyitás böngészőben</a>
+  </div>
+
+  <section class="panel" id="iphone" role="tabpanel" aria-labelledby="tab-iphone">
+    <div>
+      <h2>Telepítés iPhone-ra</h2>
+      <p class="note" style="margin-bottom:16px">Nem kell hozzá App Store és fiók sem. Kb. 1 perc.</p>
+      <ol>
+        <li><span>Nyisd meg ezt az oldalt <b>Safariban</b>. Ha Messengerből vagy Instagramról jöttél, nyomd meg a jobb felső „…” gombot, és válaszd a „Megnyitás böngészőben” lehetőséget.</span></li>
+        <li><span>Nyomd meg lent a „Where? megnyitása” gombot.</span></li>
+        <li><span>Alul nyomd meg a Megosztás gombot (négyzet felfelé mutató nyíllal), majd „Főképernyőhöz adás” → Hozzáadás.</span></li>
+        <li><span>Mostantól a Where? ikonjáról indítsd, mint bármelyik appot.</span></li>
+      </ol>
+    </div>
+    <div class="box">
+      <h3>Megnyitás</h3>
+      <a class="btn" href="/">Where? megnyitása</a>
+      <p class="note">Gépen nézed ezt az oldalt? Nyisd meg a telefonod Safarijában. Ebben a változatban a térkép még nem érhető el.</p>
+    </div>
+    <details class="box">
+      <summary><b>Teljes változat térképpel (Expo Go)</b></summary>
+      <ol style="margin-top:12px">
+        <li><span>Töltsd le az <a href="https://apps.apple.com/app/expo-go/id982107779" target="_blank" rel="noopener">Expo Go</a> appot az App Store-ból.</span></li>
+        <li><span>Csinálj egy ingyenes fiókot az <a href="https://expo.dev/signup" target="_blank" rel="noopener">expo.dev/signup</a> oldalon, és küldd el Benedeknek az e-mail címed ide: <b style="user-select:all">remenyi.benedek2005@gmail.com</b></span></li>
+        <li><span>Fogadd el a meghívót, amit az Expótól kapsz e-mailben („Join organization”).</span></li>
+        <li><span>Az Expo Go-ban lépj be ugyanazzal a fiókkal, aztán nyisd meg ezt a linket:</span></li>
+      </ol>
+      <code id="link">exp://u.expo.dev/976e5f0d-5b6d-40c2-8046-19f4f40497a3?channel-name=preview</code>
+      <button class="btn ghost" id="copy" type="button">Link másolása</button>
+    </details>
+  </section>
+
+  <section class="panel" id="android" role="tabpanel" aria-labelledby="tab-android" hidden>
+    <div>
+      <h2>Telepítés Androidra</h2>
+      <p class="note" style="margin-bottom:16px">Androidon rendes appként települ, nem kell hozzá fiók. Kb. 2 perc.</p>
+      <ol>
+        <li><span>Nyomd meg lent a letöltés gombot a telefonodon.</span></li>
+        <li><span>Ha kész, nyisd meg a letöltött fájlt (értesítésekből vagy a Letöltések mappából).</span></li>
+        <li><span>A telefon megkérdezi, hogy engedélyezed-e az ismeretlen forrásból való telepítést. Engedélyezd a böngésződnek, aztán lépj vissza, és nyomd meg a Telepítés gombot.</span></li>
+        <li><span>Ha a Play Protect figyelmeztet, válaszd a „Telepítés mégis” lehetőséget. Az app nem a Play Áruházból jön, ezért szól.</span></li>
+      </ol>
+    </div>
+    <div class="box">
+      <h3>Letöltés</h3>
+      <a class="btn" id="apk" href="https://where-app.expo.app/where-beta.apk" download>Where? letöltése (APK)</a>
+      <p class="note" id="apk-note">Gépen nézed ezt az oldalt? Nyisd meg a telefonodon, és ott nyomd meg a gombot. Egyszer kell telepíteni, utána magától frissül.</p>
+      <p class="note">Nem akarsz telepíteni? <a href="/">Használd böngészőből</a>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Így használd</h2>
+    <div class="uses">
+      <div class="use"><b>Programok</b><p>A mai és a következő napok bulijai és koncertjei. Szűrhetsz napra és arra, ami közel van hozzád.</p></div>
+      <div class="use"><b>Kocsmák</b><p>Helyek térképen és listában, azzal együtt, hogy most nyitva vannak-e.</p></div>
+      <div class="use"><b>Barátok</b><p>Kövesd a haverjaidat. Ha ti is követitek egymást, közös tervet csinálhattok. Szívecskével szavaztok a programokra, és ha mindenkinek tetszik ugyanaz, abból Meccs lesz.</p></div>
+      <div class="use"><b>Profil</b><p>A @felhasználóneved, a mentett programjaid és a beállítások.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Jó tudni</h2>
+    <ul>
+      <li>Regisztrálj e-mail címmel és jelszóval. Ha elfelejted a jelszót, kódot küldünk, ami néha a spam mappába kerül.</li>
+      <li>Az app magától frissül. Ha újdonságot hallasz, zárd be teljesen, és nyisd meg újra.</li>
+      <li>Hibát találtál, vagy van egy ötleted? Profil → Beállítások → Hiba vagy ötlet. Benedek minden üzenetet elolvas.</li>
+      <li>iPhone-on, a böngészős változatban még nincs térkép és push értesítés.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+const tabs = { iphone: document.getElementById('tab-iphone'), android: document.getElementById('tab-android') };
+function show(name) {
+  for (const [k, t] of Object.entries(tabs)) {
+    const on = k === name;
+    t.setAttribute('aria-selected', on);
+    document.getElementById(k).hidden = !on;
+  }
+}
+tabs.iphone.addEventListener('click', () => { show('iphone'); history.replaceState(null, '', '#iphone'); });
+tabs.android.addEventListener('click', () => { show('android'); history.replaceState(null, '', '#android'); });
+const fromHash = location.hash.slice(1);
+show(fromHash === 'android' || fromHash === 'iphone' ? fromHash : (/android/i.test(navigator.userAgent) ? 'android' : 'iphone'));
+
+// Messenger / Instagram / Facebook beépített böngészője nem tölt le fájlt, és nem enged Főképernyőhöz adni.
+(function () {
+  const ua = navigator.userAgent;
+  if (!/FBAN|FBAV|FB_IAB|Instagram|Messenger|Line\/|TikTok|Snapchat/i.test(ua)) return;
+  const android = /android/i.test(ua);
+  const here = location.host + location.pathname;
+  const box = document.getElementById('inapp');
+  const btn = document.getElementById('inapp-btn');
+  if (android) {
+    btn.href = 'intent://' + here + '#Intent;scheme=https;package=com.android.chrome;end';
+    document.getElementById('apk').href = 'intent://where-app.expo.app/where-beta.apk#Intent;scheme=https;package=com.android.chrome;end';
+  } else {
+    btn.href = 'x-safari-https://' + here;
+    btn.textContent = 'Megnyitás Safariban';
+    document.getElementById('inapp-text').textContent += ' Ha a gomb nem működik: jobb felül „…”, majd „Megnyitás böngészőben”.';
+  }
+  box.hidden = false;
+})();
+addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h in tabs) show(h); });
+
+document.getElementById('copy').addEventListener('click', async (e) => {
+  const el = document.getElementById('link');
+  try { await navigator.clipboard.writeText(el.textContent); e.target.textContent = 'Kimásolva'; }
+  catch { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); e.target.textContent = 'Jelöld ki és másold'; }
+  setTimeout(() => (e.target.textContent = 'Link másolása'), 2500);
+});
+</script>
+
+</body>
+</html>

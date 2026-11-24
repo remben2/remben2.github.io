@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
+    <title>Where?</title>
+    <meta name="description" content="Budapesti bulik, koncertek és kocsmák egy helyen." />
+    <meta name="theme-color" content="#0B0B0F" />
+    <!-- Telepíthető webapp (Főképernyőhöz adás iPhone-on és Androidon) -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Where?" />
+    <style id="expo-reset">
+      html, body { height: 100%; background: #0B0B0F; }
+      body { overflow: hidden; margin: 0; }
+      #root { display: flex; height: 100%; flex: 1; }
+    </style>
+  <link rel="icon" href="/favicon.ico"/></head>
+  <body>
+    <noscript>Az apphoz engedélyezd a JavaScriptet.</noscript>
+    <div id="root"></div>
+  <script src="/_expo/static/js/web/__expo-metro-runtime-9f1a7b6acd20011e290bc79f0164ae37.js" defer></script><script src="/_expo/static/js/web/__common-6ff65e4ba4dfe0542ff01abb48fadaf2.js" defer></script><script src="/_expo/static/js/web/entry-34649d41a7f9df9cee1652b59b2d22fb.js" defer></script>
+</body>
+</html>

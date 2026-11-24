@@ -1,0 +1,38 @@
+name: Béta fájlok átmásolása az Expo tárhelyről
+on:
+  push:
+    paths: ['.github/workflows/mirror-beta.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Letöltés (újrapróbálással, ha az Expo korlátoz)
+        run: |
+          set -u
+          mkdir -p mirror
+          get() {
+            for i in $(seq 1 30); do
+              code=$(curl -sL -o "$2" -w '%{http_code}' "$1")
+              echo "$1 -> $code ($(stat -c %s "$2" 2>/dev/null) bájt)"
+              [ "$code" = "200" ] && return 0
+              sleep 20
+            done
+            return 1
+          }
+          get https://where-app.expo.app/beta/ mirror/beta-index.html || true
+          get https://where-app.expo.app/beta/android.json mirror/android.json || true
+          get https://where-app.expo.app/beta/where-beta.apk mirror/beta-where-beta.apk || true
+          get https://where-app.expo.app/where-beta.apk mirror/root-where-beta.apk || true
+          ls -la mirror
+          file mirror/* || true
+      - name: Mentés a repóba
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git add mirror
+          git commit -m "Béta fájlok az Expo tárhelyről" || echo "nincs változás"
+          git push

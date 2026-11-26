@@ -1,0 +1,69 @@
+# Béta APK közzététele GitHub Release-ként (a letöltőoldal gombja a „latest” release where-beta.apk fájljára mutat).
+# Miért: az Expo ingyenes tárhelye (where-app.expo.app) havi kéréslimitnél „Too Many Requests”-et ad, és egy
+# webes kiadás felülírta az APK-t – ezért halt le visszatérően a letöltés. A GitHub Release-nek nincs ilyen limitje.
+#
+# Két forrás közül egy kell:
+#   apk_url    – közvetlen letöltési link (pl. az EAS build „Install” / artifact linkje)
+#   parts_ref  – egy ideiglenes ág, amin az APK darabokban van (apk/part-*), mert a git 100 MB-os fájlt nem enged
+name: APK kiadás
+on:
+  workflow_dispatch:
+    inputs:
+      apk_url:
+        description: 'Az APK közvetlen letöltési linkje (vagy hagyd üresen, ha parts_ref-et adsz)'
+        required: false
+      parts_ref:
+        description: 'Ideiglenes ág az APK darabjaival (apk/part-*), utána törlődik'
+        required: false
+      sha256:
+        description: 'Várt SHA-256 (opcionális ellenőrzés)'
+        required: false
+      runtime:
+        description: 'A build runtimeVersion-je (pl. native-1)'
+        required: true
+        default: native-1
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: APK beszerzése
+        env:
+          APK_URL: ${{ inputs.apk_url }}
+          PARTS_REF: ${{ inputs.parts_ref }}
+        run: |
+          set -euo pipefail
+          if [ -n "$APK_URL" ]; then
+            curl -fL --retry 3 -o where-beta.apk "$APK_URL"
+          elif [ -n "$PARTS_REF" ]; then
+            git fetch --depth 1 origin "$PARTS_REF"
+            mkdir parts && git --work-tree=parts checkout FETCH_HEAD -- apk
+            cat parts/apk/part-* > where-beta.apk
+          else
+            echo "apk_url vagy parts_ref kell" && exit 1
+          fi
+          size=$(stat -c %s where-beta.apk)
+          echo "Méret: $size bájt"
+          [ "$size" -gt 20000000 ] || { echo "Túl kicsi, nem APK"; exit 1; }
+          unzip -tq where-beta.apk >/dev/null || { echo "Nem érvényes APK (zip)"; exit 1; }
+          sha256sum where-beta.apk
+      - name: SHA-256 ellenőrzés
+        if: inputs.sha256 != ''
+        env:
+          WANT: ${{ inputs.sha256 }}
+        run: echo "$WANT  where-beta.apk" | sha256sum -c -
+      - name: Release (beta-<runtime>-<dátum>), ez lesz a „latest”
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUNTIME: ${{ inputs.runtime }}
+        run: |
+          set -euo pipefail
+          tag="beta-${RUNTIME}-$(date -u +%Y%m%d-%H%M)"
+          gh release create "$tag" where-beta.apk --title "Where? béta ($RUNTIME)" --notes "Android béta APK. Letöltőoldal: https://remben2.github.io/beta/" --latest
+      - name: Ideiglenes ág törlése
+        if: inputs.parts_ref != ''
+        env:
+          PARTS_REF: ${{ inputs.parts_ref }}
+        run: git push origin --delete "$PARTS_REF" || true

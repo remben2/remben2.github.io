@@ -31,8 +31,11 @@ ol{margin:0;padding:0;list-style:none;display:grid;gap:14px;counter-reset:s}
 ol li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start}
 ol li::before{content:counter(s);font:700 .9rem/28px var(--display);text-align:center;border-radius:50%;background:var(--surface);border:1px solid var(--line);color:var(--accent)}
 a{color:var(--accent)}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px}
-.tab{font:600 1rem/1 var(--body);padding:12px;border-radius:10px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1.7fr;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px}
+.tab{font:600 1rem/1.2 var(--body);padding:12px 8px;border-radius:10px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+@media (max-width:420px){.tab{font-size:.92rem}}
+.plans{display:grid;gap:12px}
+.plans p{padding-left:14px;border-left:2px solid var(--accent)}
 .tab[aria-selected="true"]{background:var(--accent);color:var(--on-accent)}
 .tab:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .panel{display:grid;gap:24px}
@@ -66,6 +69,7 @@ ul{margin:0;padding-left:20px;display:grid;gap:8px}
   <div class="tabs" role="tablist" aria-label="Telefon típusa">
     <button class="tab" role="tab" id="tab-iphone" aria-controls="iphone" aria-selected="true">iPhone</button>
     <button class="tab" role="tab" id="tab-android" aria-controls="android" aria-selected="false">Android</button>
+    <button class="tab" role="tab" id="tab-fejlesztesek" aria-controls="fejlesztesek" aria-selected="false">Várható fejlesztések</button>
   </div>
 
   <div class="box" id="inapp" hidden>
@@ -116,9 +120,25 @@ ul{margin:0;padding-left:20px;display:grid;gap:8px}
     </div>
     <div class="box">
       <h3>Letöltés</h3>
-      <a class="btn" id="apk" href="https://where-app.expo.app/where-beta.apk" download>Where? letöltése (APK)</a>
+      <a class="btn" id="apk" href="https://github.com/remben2/remben2.github.io/releases/latest/download/where-beta.apk">Where? letöltése (APK)</a>
       <p class="note" id="apk-note">Gépen nézed ezt az oldalt? Nyisd meg a telefonodon, és ott nyomd meg a gombot. Egyszer kell telepíteni, utána magától frissül.</p>
       <p class="note">Nem akarsz telepíteni? <a href="/">Használd böngészőből</a>.</p>
+    </div>
+  </section>
+
+  <section class="panel" id="fejlesztesek" role="tabpanel" aria-labelledby="tab-fejlesztesek" hidden>
+    <div>
+      <h2>Várható fejlesztések</h2>
+      <p class="note" style="margin-bottom:16px">Ezeken dolgozom most.</p>
+      <div class="plans">
+        <p><b>Facebook-összekapcsolás.</b> Hamarosan megtalálod az appban a Facebookos ismerőseidet.</p>
+        <p><b>Több kocsma és program.</b> Bővül a lista, és pontosabbak lesznek az adatok: nyitvatartás, árak, helyszínek.</p>
+        <p><b>Hibajavítások.</b> Folyamatosan jönnek. Az app ezeket magától letölti, nem kell újratelepíteni.</p>
+      </div>
+    </div>
+    <div class="box">
+      <p>Ha van ötleted vagy hibát találtál, írj nekem:</p>
+      <a href="mailto:remenyi.benedek2005@gmail.com">remenyi.benedek2005@gmail.com</a>
     </div>
   </section>
 
@@ -144,7 +164,7 @@ ul{margin:0;padding-left:20px;display:grid;gap:8px}
 </div>
 
 <script>
-const tabs = { iphone: document.getElementById('tab-iphone'), android: document.getElementById('tab-android') };
+const tabs = { iphone: document.getElementById('tab-iphone'), android: document.getElementById('tab-android'), fejlesztesek: document.getElementById('tab-fejlesztesek') };
 function show(name) {
   for (const [k, t] of Object.entries(tabs)) {
     const on = k === name;
@@ -154,8 +174,9 @@ function show(name) {
 }
 tabs.iphone.addEventListener('click', () => { show('iphone'); history.replaceState(null, '', '#iphone'); });
 tabs.android.addEventListener('click', () => { show('android'); history.replaceState(null, '', '#android'); });
+tabs.fejlesztesek.addEventListener('click', () => { show('fejlesztesek'); history.replaceState(null, '', '#fejlesztesek'); });
 const fromHash = location.hash.slice(1);
-show(fromHash === 'android' || fromHash === 'iphone' ? fromHash : (/android/i.test(navigator.userAgent) ? 'android' : 'iphone'));
+show(Object.hasOwn(tabs, fromHash) ? fromHash : (/android/i.test(navigator.userAgent) ? 'android' : 'iphone'));
 
 // Messenger / Instagram / Facebook beépített böngészője nem tölt le fájlt, és nem enged Főképernyőhöz adni.
 (function () {
@@ -167,7 +188,7 @@ show(fromHash === 'android' || fromHash === 'iphone' ? fromHash : (/android/i.te
   const btn = document.getElementById('inapp-btn');
   if (android) {
     btn.href = 'intent://' + here + '#Intent;scheme=https;package=com.android.chrome;end';
-    document.getElementById('apk').href = 'intent://where-app.expo.app/where-beta.apk#Intent;scheme=https;package=com.android.chrome;end';
+    document.getElementById('apk').href = 'intent://github.com/remben2/remben2.github.io/releases/latest/download/where-beta.apk#Intent;scheme=https;package=com.android.chrome;end';
   } else {
     btn.href = 'x-safari-https://' + here;
     btn.textContent = 'Megnyitás Safariban';
@@ -175,7 +196,7 @@ show(fromHash === 'android' || fromHash === 'iphone' ? fromHash : (/android/i.te
   }
   box.hidden = false;
 })();
-addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h in tabs) show(h); });
+addEventListener('hashchange', () => { const h = location.hash.slice(1); if (Object.hasOwn(tabs, h)) show(h); });
 
 document.getElementById('copy').addEventListener('click', async (e) => {
   const el = document.getElementById('link');

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0B0B0F">
+<meta property="og:title" content="Where?">
+<meta property="og:description" content="Megosztott tartalom a Where? appban.">
+<title>Megnyitás a Where? appban</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+:root{--bg:#0B0B0F;--surface:#16161D;--line:#26262F;--fg:#F4F4F6;--muted:#9A9AA8;--accent:#8C6CFF;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;min-height:100vh;min-height:100dvh;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right)) 24px max(16px,env(safe-area-inset-left))}
+main{width:100%;max-width:420px;display:grid;gap:20px;text-align:center}
+h1{margin:0;font-size:1.6rem;line-height:1.2;letter-spacing:-.02em}
+p{margin:0;color:var(--muted)}
+.btns{display:grid;gap:10px}
+.btn{display:block;padding:16px;border-radius:14px;font:600 1rem/1 inherit;text-decoration:none;border:1px solid var(--line);color:var(--fg);background:var(--surface)}
+.btn.main{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.tip{font-size:.9rem;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;text-align:left}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <h1>Megnyitás a Where? appban</h1>
+  <p id="lead">Egy pillanat, megnyitjuk.</p>
+  <div class="btns">
+    <a class="btn main" id="app" href="#" hidden>Megnyitás az appban</a>
+    <a class="btn" id="web" href="/">Megnyitás weben</a>
+    <a class="btn" id="get" href="/beta/">Az app letöltése</a>
+  </div>
+  <p class="tip" id="tip" hidden>Ha a Messenger vagy az Instagram beépített böngészőjében nem nyílik meg az app, koppints a jobb felső ⋮ vagy ··· menüre, és válaszd a „Megnyitás böngészőben” pontot, majd ezt a linket újra.</p>
+</main>
+<script>
+(function () {
+  // Csak a mi belső útvonalaink (ugyanaz a szabály, mint az appban: features/share-link.ts)
+  var ALLOWED = /^\/(event|venue|u|post|join)\/[A-Za-z0-9._~%-]{1,80}$/;
+  var to = null;
+  try { to = new URLSearchParams(location.search).get('to'); } catch (e) {}
+  if (to) to = to.replace(/\/+$/, '');
+  var ok = !!to && ALLOWED.test(to);
+  var ua = navigator.userAgent || '';
+  var android = /Android/i.test(ua);
+  var inApp = /FBAN|FBAV|FB_IAB|Messenger|Instagram|Line\/|Snapchat/i.test(ua);
+  var web = ok ? '/?to=' + encodeURIComponent(to) : '/';
+  document.getElementById('web').href = web;
+
+  if (!ok) { location.replace('/'); return; }
+
+  if (!android) {
+    // iPhone (Expo Go) és gép: a webes változat azonnal megnyitja a tartalmat
+    location.replace(web);
+    return;
+  }
+
+  // Androidon intent link: ha az app telepítve van, megnyílik; ha nincs, a letöltőoldalra visz
+  var intent = 'intent://' + to.slice(1) + '#Intent;scheme=where;package=hu.where.app;' +
+    'S.browser_fallback_url=' + encodeURIComponent(location.origin + '/beta/') + ';end';
+  var app = document.getElementById('app');
+  app.href = intent;
+  app.hidden = false;
+  document.getElementById('lead').textContent = 'Nyisd meg az appot, vagy nézd meg a weben.';
+  if (inApp) document.getElementById('tip').hidden = false;
+  // Egyszer megpróbáljuk magától; ha a böngésző blokkolja, a gomb marad
+  try { setTimeout(function () { location.href = intent; }, 150); } catch (e) {}
+})();
+</script>
+<noscript><p><a href="/beta/">Az app letöltése</a></p></noscript>
+</body>
+</html>

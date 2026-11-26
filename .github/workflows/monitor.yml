@@ -1,0 +1,71 @@
+# Óránkénti figyelés: él-e a webes app, a béta oldal, az android.json és az APK letöltés.
+# Hibánál nyit egy issue-t (erről a GitHub e-mailt küld), helyreálláskor lezárja.
+# Kézzel is futtatható: Actions → Figyelés → Run workflow.
+# Megjegyzés: a GitHub 60 nap tétlenség után leállítja az ütemezett workflow-t egy nyilvános repóban;
+# minden kiadás (push) újraindítja a számlálót.
+name: Figyelés
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ellenőrzések
+        id: check
+        run: |
+          set -u
+          fail=""
+          base=https://remben2.github.io
+          get() { curl -sS -L --max-time 30 --retry 2 --retry-delay 10 -o "$2" -w '%{http_code}' "$1" || echo 000; }
+          # 1) Webes app: a kezdőlap és az általa betöltött összes JS fájl
+          code=$(get "$base/" index.html)
+          if [ "$code" != 200 ] || ! grep -q 'id="root"' index.html; then fail="$fail\n- Webes app: $code"; fi
+          for js in $(grep -o '/_expo/static/js/web/[^"]*\.js' index.html); do
+            c=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$base$js" || echo 000)
+            [ "$c" = 200 ] || fail="$fail\n- Hiányzó JS: $js ($c)"
+          done
+          # 2) Béta oldal
+          code=$(get "$base/beta/" beta.html)
+          if [ "$code" != 200 ] || ! grep -q 'Where? béta' beta.html; then fail="$fail\n- Béta oldal: $code"; fi
+          # 3) android.json (a régi APK-k ebből tudják, hogy van új)
+          code=$(get "$base/beta/android.json" android.json)
+          if [ "$code" != 200 ] || ! jq -e '.runtimeVersion' android.json >/dev/null 2>&1; then fail="$fail\n- android.json: $code"; fi
+          # 4) APK: a letöltőgomb linkje, csak a fejlécet nézzük
+          apk=$(grep -o 'https://github.com/remben2/remben2.github.io/releases/[^"]*where-beta.apk' beta.html | head -1)
+          if [ -z "$apk" ]; then fail="$fail\n- A béta oldalon nincs APK link"; else
+            hdr=$(curl -sS -I -L --max-time 30 "$apk" || true)
+            last=$(printf '%s' "$hdr" | grep -i '^HTTP/' | tail -1 | awk '{print $2}')
+            len=$(printf '%s' "$hdr" | grep -i '^content-length:' | tail -1 | tr -dc 0-9)
+            if [ "$last" != 200 ] || [ "${len:-0}" -lt 20000000 ]; then fail="$fail\n- APK letöltés: $last, ${len:-?} bájt"; fi
+          fi
+          if [ -n "$fail" ]; then
+            printf 'HIBA:%b\n' "$fail"
+            { echo 'report<<EOF'; printf '%b\n' "$fail"; echo EOF; } >> "$GITHUB_OUTPUT"
+            echo ok=false >> "$GITHUB_OUTPUT"
+          else
+            echo "Minden rendben."
+            echo ok=true >> "$GITHUB_OUTPUT"
+          fi
+      - name: Issue nyitása / lezárása
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OK: ${{ steps.check.outputs.ok }}
+          REPORT: ${{ steps.check.outputs.report }}
+          REPO: ${{ github.repository }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Leállt a Where? webes oldal vagy a béta letöltés"
+          open=$(gh issue list -R "$REPO" --state open --search "$title in:title" --json number -q '.[0].number')
+          if [ "$OK" = true ]; then
+            [ -n "$open" ] && gh issue close "$open" -R "$REPO" -c "Helyreállt: $RUN"
+            exit 0
+          fi
+          body=$(printf 'Az óránkénti ellenőrzés hibát talált:\n%s\n\nRészletek: %s' "$REPORT" "$RUN")
+          if [ -n "$open" ]; then gh issue comment "$open" -R "$REPO" -b "$body"
+          else gh issue create -R "$REPO" -t "$title" -b "$body" -a remben2; fi
+          exit 1

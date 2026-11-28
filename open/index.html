@@ -42,9 +42,29 @@ p{margin:0;color:var(--muted)}
   var to = null;
   try { to = new URLSearchParams(location.search).get('to'); } catch (e) {}
   if (to) to = to.replace(/\/+$/, '');
-  var ok = !!to && ALLOWED.test(to);
   var ua = navigator.userAgent || '';
   var android = /Android/i.test(ua);
+  // Regisztrációs e-mail megerősítése (signUp emailRedirectTo, features/share-link.ts CONFIRM_PATH):
+  // a fiók itt már meg van erősítve, csak vissza kell vinni az appba
+  if (to === '/confirmed') {
+    document.title = 'E-mail megerősítve – Where?';
+    document.querySelector('h1').textContent = 'Megerősítetted az e-mail címed';
+    document.getElementById('lead').textContent = android
+      ? 'Nyisd meg az appot, és jelentkezz be.'
+      : 'Lépj vissza az appba, és jelentkezz be az e-mail címeddel és a jelszavaddal.';
+    document.getElementById('web').hidden = true;
+    document.getElementById('get').hidden = true;
+    if (android) {
+      var home = 'intent://#Intent;scheme=where;package=hu.where.app;S.browser_fallback_url=' +
+        encodeURIComponent(location.origin + '/beta/') + ';end';
+      var a = document.getElementById('app');
+      a.href = home;
+      a.hidden = false;
+      try { setTimeout(function () { location.href = home; }, 150); } catch (e) {}
+    }
+    return;
+  }
+  var ok = !!to && ALLOWED.test(to);
   var inApp = /FBAN|FBAV|FB_IAB|Messenger|Instagram|Line\/|Snapchat/i.test(ua);
   var web = ok ? '/?to=' + encodeURIComponent(to) : '/';
   document.getElementById('web').href = web;
